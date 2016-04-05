@@ -1,11 +1,41 @@
 import { List, Map } from 'immutable'
 
+export const INITIAL_STATE = Map();
+
 export function setEntries(state, entries) {
   return state.set('entries', List(entries));
 }
 
+function getWinners(vote) {
+  if (!vote) 
+    return [];
+
+  const [a, b] = vote.get('pair');
+  const aVotes = vote.getIn(['tally', a], 0);
+  const bVotes = vote.getIn(['tally', b], 0);
+
+  if (aVotes > bVotes) 
+  {
+    return [a]
+  }
+  else if (bVotes > aVotes)
+  {
+    return [b]
+  }
+  else
+  {
+    return [a, b]
+  }
+}
+
 export function next(state) {
-  const entries = state.get('entries');
+  const entries = state.get('entries').concat(getWinners(state.get('vote')));
+
+  if (entries.size === 1) {
+    return state.remove('vote')
+                .remove('entries')
+                .set('winner', entries.first())
+  }
 
   return state.merge(Map({
     vote: Map({
@@ -15,14 +45,6 @@ export function next(state) {
   }))
 }
 
-export function vote(state, votedItem) {
-  const tally = state.get('pair').get('tally');
-  
-  return state.merge(Map({
-    vote: Map({
-      tally: tally.merge(Map({
-        votedItem: tally.get(votedItem)
-      }))
-    })
-  }))
+export function vote(state, entry) {
+  return state.updateIn(['tally', entry], 0, (tally) => tally + 1);
 }
