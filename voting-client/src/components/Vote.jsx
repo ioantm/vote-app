@@ -1,6 +1,12 @@
 import React, { PropTypes, Component } from 'react';
+import PureRenderMixin from 'react-addons-pure-render-mixin'
 
 class Vote extends Component {
+	constructor(props) {
+		super(props);
+		this.shouldComponentUpdate = PureRenderMixin.shouldComponentUpdate.bind(this);
+	}
+
 	isDisabled() {
 		const { hasVoted } = this.props;
 
@@ -12,7 +18,7 @@ class Vote extends Component {
 
 		return (
 			<div className="voting">
-				{pair.map((entry) => 
+				{pair && pair.map((entry) => 
 					(<button key={entry}
 							disabled={this.isDisabled()}
 							onClick={() => vote(entry)}>

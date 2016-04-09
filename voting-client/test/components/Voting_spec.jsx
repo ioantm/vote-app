@@ -7,8 +7,9 @@ import {
 	Simulate,
 	findRenderedComponentWithType
 } from 'react-addons-test-utils'
-import Voting from '../../src/components/Voting'
+import { Voting } from '../../src/components/Voting'
 import Winner from '../../src/components/Winner'
+import { List } from 'immutable'
 
 describe('Voting', () => {
 	it('render a pair of buttons', () => {
@@ -66,9 +67,57 @@ describe('Voting', () => {
 		const buttons = scryRenderedDOMComponentsWithTag(component, 'button');
 		expect(buttons.length).to.equal(0);
 
-		const winner = findRenderedComponentWithType(component, Winner)//ReactDOM.findDOMNode(component.refs.winner);
-		expect(winner).to.be.ok;
-		expect(winner.textContent).to.contain('Trainspotting');
+		const winnerInstance = ReactDOM.findDOMNode(component.refs.winner);
+		expect(winnerInstance).to.be.ok;
+		expect(winnerInstance.textContent).to.contain('Trainspotting');
 
 	})
+
+	it('render a pure component', () => {
+		const container = document.createElement('div')
+		const pair = ['Trainspotting', '28 days later']
+
+		let component = ReactDOM.render(
+			<Voting pair={pair}/>,
+			container
+		)
+
+		let firstButton = scryRenderedDOMComponentsWithTag(component, 'button')[0];
+
+		expect(firstButton.textContent).to.equal('Trainspotting');
+
+		pair[0] = 'Green mile';
+
+		component = ReactDOM.render(
+			<Voting pair={pair}/>,
+			container
+		)
+
+		firstButton = scryRenderedDOMComponentsWithTag(component, 'button')[0];
+		expect(firstButton.textContent).to.equal('Trainspotting');
+	})
+
+	it('update DOM when prop changes', () => {
+		const container = document.createElement('div')
+		const pair = List.of('Trainspotting', '28 days later');
+
+		let component = ReactDOM.render(
+			<Voting pair={pair}/>,
+			container
+		)
+
+		let firstButton = scryRenderedDOMComponentsWithTag(component, 'button')[0];
+
+		expect(firstButton.textContent).to.equal('Trainspotting');
+
+		const newPair = pair.set(0, "Green mile");
+
+		component = ReactDOM.render(
+			<Voting pair={newPair}/>,
+			container
+		)
+
+		firstButton = scryRenderedDOMComponentsWithTag(component, 'button')[0];
+		expect(firstButton.textContent).to.equal('Green mile');
+	});
 });
